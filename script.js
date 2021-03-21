@@ -1,0 +1,72 @@
+// Some code thanks to @chrisgannon
+
+var select = function(s) {
+  return document.querySelector(s);
+}
+
+function randomBetween(min,max)
+{
+    var number = Math.floor(Math.random()*(max-min+1)+min);
+  
+    if ( number !== 0 ){
+      return number;
+    }else {
+      return 0.5;
+    }
+}
+
+$(document).ready(function(){
+  $(document).mousemove(function(event){
+     $("#light").css({"top": event.pageY - 250, "left": event.pageX - 300}); 
+  }); 
+  
+  
+});
+
+var items = []
+  , point = document.querySelector('svg').createSVGPoint();
+
+function getCoordinates(e, svg) {
+  point.x = e.clientX;
+  point.y = e.clientY;
+  return point.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+function changeColor(e) {
+  document.body.className = e.currentTarget.className;
+}
+
+function Item(config) {
+  Object.keys(config).forEach(function (item) {
+    this[item] = config[item];
+  }, this);
+  this.el.addEventListener('mousemove', this.mouseMoveHandler.bind(this));
+  this.el.addEventListener('touchmove', this.touchMoveHandler.bind(this));
+}
+
+Item.prototype = {
+  update: function update(c) {
+    this.clip.setAttribute('cx', c.x);
+    this.clip.setAttribute('cy', c.y);
+  },
+  mouseMoveHandler: function mouseMoveHandler(e) {
+    this.update(getCoordinates(e, this.svg));
+  },
+  touchMoveHandler: function touchMoveHandler(e) {
+    e.preventDefault();
+    var touch = e.targetTouches[0];
+    if (touch) return this.update(getCoordinates(touch, this.svg));
+  }
+};
+
+[].slice.call(document.querySelectorAll('.item'), 0).forEach(function (item, index) {
+  items.push(new Item({
+    el: item,
+    svg: item.querySelector('svg'),
+    clip: document.querySelector('#clip-'+index+' circle'),
+  }));
+});
+
+[].slice.call(document.querySelectorAll('button'), 0).forEach(function (button) {
+  button.addEventListener('click', changeColor);
+});
